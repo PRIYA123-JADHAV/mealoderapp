@@ -1,6 +1,8 @@
 <?php
 include(__DIR__ . '/../config/db.php');
-$result = $conn->query("SELECT * FROM menus ORDER BY id ASC");
+
+// Fetch all dishes from menu table
+$result = $conn->query("SELECT * FROM menu ORDER BY id ASC");
 ?>
 
 <!DOCTYPE html>
@@ -9,7 +11,7 @@ $result = $conn->query("SELECT * FROM menus ORDER BY id ASC");
   <title>Manage Menus & Dishes</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #f6f8fa;
       padding: 20px;
     }
@@ -20,6 +22,7 @@ $result = $conn->query("SELECT * FROM menus ORDER BY id ASC");
       border-collapse: collapse;
       width: 100%;
       background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     th, td {
       border: 1px solid #ddd;
@@ -52,16 +55,15 @@ $result = $conn->query("SELECT * FROM menus ORDER BY id ASC");
       border-radius: 4px;
       text-decoration: none;
     }
-    
-        .back-btn {
-            margin-top: 20px;
-            display: inline-block;
-            background: #007bff;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
+    .back-btn {
+      margin-top: 20px;
+      display: inline-block;
+      background: #007bff;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 5px;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -75,10 +77,8 @@ $result = $conn->query("SELECT * FROM menus ORDER BY id ASC");
         <th>ID</th>
         <th>Image</th>
         <th>Dish Name</th>
-        <th>Price</th>
+        <th>Price (₹)</th>
         <th>Category</th>
-        <th>Details</th>
-        <th>Date Added</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -86,12 +86,16 @@ $result = $conn->query("SELECT * FROM menus ORDER BY id ASC");
       <?php while ($row = $result->fetch_assoc()) { ?>
         <tr>
           <td><?= $row['id'] ?></td>
-          <td><img src="<?= $row['image_url'] ?>" alt="dish image"></td>
-          <td><?= htmlspecialchars($row['product_name']) ?></td>
+          <td>
+            <?php if (!empty($row['image_url'])) { ?>
+              <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="dish image">
+            <?php } else { ?>
+              No Image
+            <?php } ?>
+          </td>
+          <td><?= htmlspecialchars($row['dish_name']) ?></td>
           <td>₹<?= number_format($row['price'], 2) ?></td>
-          <td><?= $row['category'] ?></td>
-          <td><?= htmlspecialchars($row['details']) ?></td>
-          <td><?= $row['date_added'] ?></td>
+          <td><?= htmlspecialchars($row['category']) ?></td>
           <td class="actions">
             <a href="edit-dish.php?id=<?= $row['id'] ?>"><button class="edit-btn">Edit</button></a>
             <form method="POST" action="delete-dish.php" style="display:inline;" onsubmit="return confirm('Delete this dish?');">
@@ -103,8 +107,8 @@ $result = $conn->query("SELECT * FROM menus ORDER BY id ASC");
       <?php } ?>
     </tbody>
   </table>
-  <br>
-  <br>
-<a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
+
+  <br><br>
+  <a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
 </body>
 </html>

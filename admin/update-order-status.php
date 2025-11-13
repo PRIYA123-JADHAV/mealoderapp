@@ -1,12 +1,12 @@
 <?php
-include('../config/db.php');
+include(__DIR__ . '/../config/db.php');
+
 
 header('Content-Type: application/json');
 
-$data = json_decode(file_get_contents("php://input"), true);
-
-$order_id = $data['order_id'] ?? null;
-$status = $data['status'] ?? null;
+// ✅ Accept POST form data instead of JSON
+$order_id = $_POST['order_id'] ?? null;
+$status   = $_POST['status'] ?? null;
 
 if (!$order_id || !$status) {
     echo json_encode(["success" => false, "message" => "Missing order_id or status"]);

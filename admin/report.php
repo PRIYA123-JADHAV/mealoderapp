@@ -1,5 +1,5 @@
 <?php
-include('../config/db.php');
+include(__DIR__ . '/../config/db.php');
 
 // Fetch summary
 $summaryResult = $conn->query("SELECT COUNT(*) AS total_payments, SUM(total) AS total_revenue FROM payment");

@@ -1,12 +1,14 @@
 <?php
 include(__DIR__ . '/../config/db.php');
 
-// Handle deletion
+// ✅ Handle deletion safely
 if (isset($_GET['delete'])) {
-  $id = intval($_GET['delete']);
-  $conn->query("DELETE FROM feedback WHERE id = $id");
-  header("Location: view-feedback.php");
-  exit;
+    $id = intval($_GET['delete']);
+    $stmt = $conn->prepare("DELETE FROM feedback WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    header("Location: view-feedback.php");
+    exit;
 }
 
 $result = $conn->query("SELECT * FROM feedback ORDER BY submitted_at DESC");
@@ -18,13 +20,15 @@ $result = $conn->query("SELECT * FROM feedback ORDER BY submitted_at DESC");
   <title>View Feedback & Reviews</title>
   <style>
     body {
-      font-family: Arial;
-      background: #f9f9f9;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 20px;
     }
     .container {
       max-width: 1000px;
       margin: auto;
-      padding: 30px;
+      padding: 20px;
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -32,6 +36,7 @@ $result = $conn->query("SELECT * FROM feedback ORDER BY submitted_at DESC");
     h2 {
       text-align: center;
       margin-bottom: 20px;
+      color: #333;
     }
     table {
       width: 100%;
@@ -63,11 +68,19 @@ $result = $conn->query("SELECT * FROM feedback ORDER BY submitted_at DESC");
       text-decoration: none;
       border-radius: 5px;
     }
+    .no-data {
+      text-align: center;
+      padding: 15px;
+      font-size: 16px;
+      color: #666;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>📝 Customer Feedback & Reviews</h2>
+
+    <?php if ($result->num_rows > 0) { ?>
     <table>
       <tr>
         <th>ID</th>
@@ -90,6 +103,9 @@ $result = $conn->query("SELECT * FROM feedback ORDER BY submitted_at DESC");
         </tr>
       <?php endwhile; ?>
     </table>
+    <?php } else { ?>
+      <div class="no-data">No feedback available yet.</div>
+    <?php } ?>
 
     <a class="back-btn" href="dashboard.php">← Back to Dashboard</a>
   </div>

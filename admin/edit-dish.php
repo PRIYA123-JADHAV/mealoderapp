@@ -2,18 +2,17 @@
 include(__DIR__ . '/../config/db.php');
 
 $id = $_GET['id'] ?? 0;
-$query = $conn->query("SELECT * FROM menus WHERE id = $id");
+$query = $conn->query("SELECT * FROM menu WHERE id = $id");
 $dish = $query->fetch_assoc();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['product_name'];
+    $name = $_POST['dish_name'];
     $price = $_POST['price'];
     $category = $_POST['category'];
     $image_url = $_POST['image_url'];
-    $details = $_POST['details'];
 
-    $stmt = $conn->prepare("UPDATE menus SET product_name=?, price=?, category=?, image_url=?, details=? WHERE id=?");
-    $stmt->bind_param("sdsssi", $name, $price, $category, $image_url, $details, $id);
+    $stmt = $conn->prepare("UPDATE menu SET dish_name=?, price=?, category=?, image_url=? WHERE id=?");
+    $stmt->bind_param("sdssi", $name, $price, $category, $image_url, $id);
     $stmt->execute();
 
     header("Location: manage-menus.php");
@@ -38,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       max-width: 500px;
       margin: auto;
     }
-    input, textarea, select {
+    input, select {
       width: 100%;
       margin-bottom: 15px;
       padding: 10px;
@@ -51,6 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       border: none;
       padding: 10px 15px;
       border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
     }
   </style>
 </head>
@@ -58,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <h2>Edit Dish</h2>
   <form method="POST">
     <label>Dish Name:</label>
-    <input type="text" name="product_name" value="<?= htmlspecialchars($dish['product_name']) ?>" required>
+    <input type="text" name="dish_name" value="<?= htmlspecialchars($dish['dish_name']) ?>" required>
 
     <label>Price:</label>
     <input type="number" name="price" step="0.01" value="<?= $dish['price'] ?>" required>
@@ -69,13 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <option value="Lunch" <?= $dish['category'] == 'Lunch' ? 'selected' : '' ?>>Lunch</option>
       <option value="Dinner" <?= $dish['category'] == 'Dinner' ? 'selected' : '' ?>>Dinner</option>
       <option value="Dessert" <?= $dish['category'] == 'Dessert' ? 'selected' : '' ?>>Dessert</option>
+      <option value="Breakfast" <?= $dish['category'] == 'Breakfast' ? 'selected' : '' ?>>Breakfast</option>
     </select>
 
     <label>Image URL:</label>
-    <input type="text" name="image_url" value="<?= htmlspecialchars($dish['image_url']) ?>">
-
-    <label>Details:</label>
-    <textarea name="details" required><?= htmlspecialchars($dish['details']) ?></textarea>
+    <input type="text" name="image_url" value="<?= htmlspecialchars($dish['image_url']) ?>" required>
 
     <button type="submit">Update Dish</button>
   </form>

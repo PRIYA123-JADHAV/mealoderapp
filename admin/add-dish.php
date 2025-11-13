@@ -2,14 +2,13 @@
 include(__DIR__ . '/../config/db.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['product_name'];
+    $name = $_POST['dish_name'];
     $price = $_POST['price'];
     $category = $_POST['category'];
     $image_url = $_POST['image_url'];
-    $details = $_POST['details'];
 
-    $stmt = $conn->prepare("INSERT INTO menus (product_name, price, category, image_url, details) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sdsss", $name, $price, $category, $image_url, $details);
+    $stmt = $conn->prepare("INSERT INTO menu (dish_name, price, category, image_url) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("sdss", $name, $price, $category, $image_url);
     $stmt->execute();
 
     header("Location: manage-menus.php");
@@ -35,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin: auto;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    input, textarea, select {
+    input, select {
       width: 100%;
       padding: 12px;
       margin-bottom: 15px;
@@ -62,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <h2 style="text-align:center;">➕ Add New Dish</h2>
   <form method="POST">
     <label>Dish Name:</label>
-    <input type="text" name="product_name" required>
+    <input type="text" name="dish_name" required>
 
     <label>Price:</label>
     <input type="number" name="price" step="0.01" required>
@@ -74,13 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <option value="Lunch">Lunch</option>
       <option value="Dinner">Dinner</option>
       <option value="Dessert">Dessert</option>
+      <option value="Breakfast">Breakfast</option>
     </select>
 
     <label>Image URL:</label>
-    <input type="text" name="image_url" placeholder="../images/food1.png" required>
-
-    <label>Details:</label>
-    <textarea name="details" rows="4" required></textarea>
+    <input type="text" name="image_url" placeholder="images/food1.png" required>
 
     <button type="submit">Add Dish</button>
     <a href="manage-menus.php">← Back to Menu List</a>

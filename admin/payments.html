@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Payments</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-light">
+
+<div class="container mt-4">
+  <h2 class="mb-4">Payment Records</h2>
+
+  <table class="table table-bordered table-striped align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Payment ID</th>
+        <th>Order ID</th>
+        <th>User</th>
+        <th>Amount</th>
+        <th>Method</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="paymentTable">
+      <tr><td colspan="8" class="text-center">Loading...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function loadPayments() {
+    fetch('get-payments.php')
+      .then(res => res.json())
+      .then(data => {
+        const tableBody = document.getElementById('paymentTable');
+        tableBody.innerHTML = '';
+
+        if (!data.success || !data.data || data.data.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="8" class="text-center">No payments found</td></tr>`;
+          return;
+        }
+
+        data.data.forEach(p => {
+          const isCOD = (String(p.payment_method).toLowerCase() === 'cod');
+          const isPending = (String(p.payment_status).toLowerCase() === 'pending');
+
+          tableBody.insertAdjacentHTML('beforeend', `
+            <tr data-id="${p.payment_id}">
+              <td>${p.payment_id}</td>
+              <td>${p.order_id}</td>
+              <td>${p.customer_name || 'Unknown'}</td>
+              <td>₹${p.total_amount}</td>
+              <td>${p.payment_method}</td>
+              <td class="status-cell">${p.payment_status}</td>
+              <td>${p.payment_date}</td>
+              <td>
+                ${isCOD && isPending
+                  ? `<button class="btn btn-sm btn-success mark-paid" data-id="${p.payment_id}">Mark as Paid</button>`
+                  : `<span class="text-muted">—</span>`}
+              </td>
+            </tr>
+          `);
+        });
+      })
+      .catch(() => {
+        document.getElementById('paymentTable').innerHTML =
+          `<tr><td colspan="8" class="text-center text-danger">Error loading payments</td></tr>`;
+      });
+  }
+
+  // Delegate click for dynamic buttons
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mark-paid');
+    if (!btn) return;
+
+    const paymentId = btn.dataset.id;
+    if (!confirm('Mark this COD payment as Paid?')) return;
+
+  fetch('update-payment-status.php', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+  body: `payment_id=${encodeURIComponent(paymentId)}&status=Paid`
+})
+.then(res => res.json())  // This works now
+.then(json => {
+  if (!json.success) {
+    alert(json.message || 'Update failed');
+    return;
+  }
+  alert(json.message); // Show success message
+  loadPayments(); // Refresh table
+})
+.catch(() => alert('Network error'));
+
+  });
+
+  loadPayments();
+</script>
+
+</body>
+</html>

@@ -2,7 +2,7 @@
 $host = "localhost";
 $user = "root";
 $pass = ""; // usually blank in XAMPP
-$dbname = "krispy";
+$dbname = "mealorderapp";  // ✅ Correct database name
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 

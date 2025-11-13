@@ -1,13 +1,13 @@
 <?php
-include('../config/db.php');
+include(__DIR__ . '/../config/db.php');
 
 header('Content-Type: text/csv');
 header('Content-Disposition: attachment; filename="orders_report.csv"');
 
 $output = fopen("php://output", "w");
 
-// Column headers
-fputcsv($output, ['ID', 'Customer Name', 'Mobile', 'Items', 'Total Price', 'Status', 'Order Time']);
+// ✅ Updated column headers
+fputcsv($output, ['Order ID', 'User ID', 'Mobile', 'Total Amount', 'Status', 'Order Date']);
 
 $sql = "SELECT * FROM orders";
 $result = $conn->query($sql);
@@ -15,12 +15,11 @@ $result = $conn->query($sql);
 while ($row = $result->fetch_assoc()) {
     fputcsv($output, [
         $row['id'],
-        $row['customer_name'],
-        $row['customer_mobile'],
-        $row['items'],
-        $row['total_price'],
+        $row['user_id'],
+        $row['mobile'],
+        $row['total_amount'],
         $row['status'],
-        $row['order_time']
+        date('d-m-Y H:i', strtotime($row['created_at']))
     ]);
 }
 

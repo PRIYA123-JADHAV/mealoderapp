@@ -1,71 +1,38 @@
 <?php
 include(__DIR__ . '/../config/db.php');
 
-$result = $conn->query("SELECT * FROM notifications ORDER BY sent_at DESC");
+$result = $conn->query("SELECT n.*, u.name AS username FROM notifications n LEFT JOIN users u ON n.user_id = u.id ORDER BY n.created_at DESC");
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Notification History</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      padding: 12px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background: #007bff;
-      color: white;
-    }
-    h2 {
-      text-align: center;
-    }
-    a {
-      display: inline-block;
-      margin-top: 10px;
-      text-decoration: none;
-      color: #007bff;
-    }
-    
-  </style>
+    <title>All Notifications</title>
+    <style>
+        body { font-family: Arial; background: #f4f6f9; }
+        table { width: 90%; margin: 20px auto; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+        th { background: #007bff; color: white; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>📨 Sent Notifications</h2>
-    <table>
-      <tr>
+<h2 style="text-align:center;">All Notifications</h2>
+<table>
+    <tr>
         <th>ID</th>
+        <th>User</th>
+        <th>Title</th>
         <th>Message</th>
-        <th>Sent At</th>
-      </tr>
-      <?php while ($row = $result->fetch_assoc()): ?>
-      <tr>
-        <td><?= $row['id'] ?></td>
-        <td><?= htmlspecialchars($row['message']) ?></td>
-        <td><?= $row['sent_at'] ?></td>
-      </tr>
-      <?php endwhile; ?>
-    </table>
-    <a href="send-notification.php">← Back to Send Notification</a>
-  </div>
+        <th>Date</th>
+    </tr>
+    <?php while ($row = $result->fetch_assoc()) { ?>
+        <tr>
+            <td><?= $row['id'] ?></td>
+            <td><?= $row['username'] ?: 'All Users' ?></td>
+            <td><?= $row['title'] ?></td>
+            <td><?= $row['message'] ?></td>
+            <td><?= $row['created_at'] ?></td>
+        </tr>
+    <?php } ?>
+</table>
 </body>
 </html>

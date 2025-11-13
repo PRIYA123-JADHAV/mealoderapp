@@ -1,124 +1,77 @@
 <?php
-session_start();
-if (!isset($_SESSION['admin'])) {
-    header("Location: login.php");
-    exit();
-}
 include(__DIR__ . '/../config/db.php');
-
-$result = $conn->query("SELECT * FROM orders ORDER BY order_time ASC");
+$result = $conn->query("SELECT * FROM orders ORDER BY id DESC");
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>View Orders</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background: #f8f9fa;
-            padding: 30px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ccc;
-        }
-
-        th {
-            background: #17a2b8;
-            color: white;
-        }
-
-        tr:hover {
-            background: #f1f1f1;
-        }
-
-        .status {
-            font-weight: bold;
-            padding: 6px 10px;
-            border-radius: 6px;
-        }
-
-        .Placed {
-            background: #e0f7fa;
-            color: #007bff;
-        }
-
-        .Cancelled {
-            background: #fdecea;
-            color: #dc3545;
-        }
-
-        .Delivered {
-            background: #e8f5e9;
-            color: #28a745;
-        }
-
-        .back-btn {
-            margin-top: 20px;
-            display: inline-block;
-            background: #17a2b8;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-    </style>
+  <title>Admin - Orders</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+    th { background: #f4f4f4; }
+    a { color: red; text-decoration: none; }
+    select { padding: 6px; }
+    button { padding: 6px 10px; background: #28a745; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #218838; }
+    .back-btn { margin-bottom: 10px; display: inline-block; text-decoration: none; color: #007bff; }
+  </style>
 </head>
 <body>
 
-    <h1>📦 Orders Overview</h1>
+<a class="back-btn" href="dashboard.php">⬅ Back to Dashboard</a>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Mobile</th>
-                <th>Items</th>
-                <th>Total Price</th>
-                <th>Status</th>
-                <th>Order Time</th>
-            </tr>
-        </thead>
-        <tbody>
-    <?php while ($row = $result->fetch_assoc()) { ?>
-        <tr>
-            <td><?= $row['id'] ?></td>
-            <td><?= htmlspecialchars($row['customer_name']) ?></td>
-            <td><?= htmlspecialchars($row['customer_mobile']) ?></td>
-            <td><?= htmlspecialchars($row['items']) ?></td>
-            <td>₹<?= number_format($row['total_price'], 2) ?></td>
-            <td><span class="status <?= $row['status'] ?>"><?= $row['status'] ?></span></td>
-            <td><?= $row['order_time'] ?></td>
-            <td>
-                <form method="POST" action="delete-order.php" onsubmit="return confirm('Are you sure you want to delete this order?');">
-                    <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                    <button type="submit" style="background:#dc3545; color:#fff; border:none; padding:6px 10px; border-radius:5px; cursor:pointer;">Delete</button>
-                </form>
-            </td>
-        </tr>
-    <?php } ?>
-</tbody>
+<h2>Orders List</h2>
 
-    </table>
+<table>
+  <tr>
+    <th>Order ID</th>
+    <th>User ID</th>
+    <th>Total Amount (₹)</th>
+    <th>Status</th>
+    <th>Address</th>
+    <th>Order Date</th>
+    <th>Action</th>
+  </tr>
 
-    <a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
+<?php while($row = $result->fetch_assoc()) { ?>
+<tr>
+  <td><?= $row['id'] ?></td>
+  <td><?= $row['user_id'] ?></td>
+  <td><?= $row['total_amount'] ?></td>
+  <td>
+    <select onchange="updateStatus(<?= $row['id'] ?>, this.value)">
+      <option value="pending" <?= ($row['status']=='pending'?'selected':'') ?>>Pending</option>
+      <option value="processing" <?= ($row['status']=='processing'?'selected':'') ?>>Processing</option>
+      <option value="delivered" <?= ($row['status']=='delivered'?'selected':'') ?>>Delivered</option>
+      <option value="canceled" <?= ($row['status']=='canceled'?'selected':'') ?>>Canceled</option>
+    </select>
+  </td>
+  <td><?= $row['address'] ?></td>
+  <td><?= $row['created_at'] ?></td>
+  <td><a href="delete-order.php?id=<?= $row['id'] ?>">Delete</a></td>
+</tr>
+<?php } ?>
+</table>
+
+<script>
+function updateStatus(orderId, status) {
+  fetch("http://localhost/mealorderapp/admin/update-order-status.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `order_id=${orderId}&status=${status}`
+  })
+  .then(res => res.text())
+  .then(response => {
+    alert("✅ Order status updated to: " + status);
+    console.log(response);
+  })
+  .catch(() => {
+    alert("❌ Failed to update order status.");
+  });
+}
+</script>
 
 </body>
 </html>

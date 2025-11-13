@@ -6,7 +6,8 @@ if (!isset($_SESSION['admin'])) {
 }
 include(__DIR__ . '/../config/db.php');
 
-$result = $conn->query("SELECT * FROM customers ORDER BY id asc");
+// ✅ Fetch data from 'users' table
+$result = $conn->query("SELECT * FROM users ORDER BY id ASC");
 ?>
 
 <!DOCTYPE html>
@@ -69,27 +70,23 @@ $result = $conn->query("SELECT * FROM customers ORDER BY id asc");
                 <th>ID</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Address</th>
                 <th>Mobile</th>
-                <th>Username</th>
                 <th>Registered At</th>
             </tr>
         </thead>
-      <tbody>
-    <?php while ($row = $result->fetch_assoc()) {
-        // Skip if essential fields are empty
-        if (empty($row['name']) || empty($row['email']) || empty($row['mobile'])) continue;
-    ?>
-        <tr>
-            <td><?= $row['id'] ?></td>
-            <td><?= htmlspecialchars($row['name']) ?></td>
-            <td><?= htmlspecialchars($row['email']) ?></td>
-            <td><?= htmlspecialchars($row['mobile']) ?></td>
-            <td><?= htmlspecialchars($row['username']) ?></td>
-            <td><?= $row['created_at'] ?? '—' ?></td>
-        </tr>
-    <?php } ?>
-</tbody>
-
+        <tbody>
+            <?php while ($row = $result->fetch_assoc()) { ?>
+                <tr>
+                    <td><?= $row['id'] ?></td>
+                    <td><?= $row['name'] ?: '-' ?></td>
+                    <td><?= $row['email'] ?: '-' ?></td>
+                    <td><?= $row['address'] ?: '-' ?></td>
+                    <td><?= htmlspecialchars($row['mobile']) ?></td>
+                    <td><?= $row['created_at'] ?></td>
+                </tr>
+            <?php } ?>
+        </tbody>
     </table>
 
     <a href="dashboard.php" class="back-btn">← Back to Dashboard</a>

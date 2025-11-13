@@ -1,23 +1,35 @@
 <?php
 session_start();
-include('../config/db.php');
+include(__DIR__ . '/../config/db.php');
 
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT * FROM admins WHERE username = ?");
+    // ✅ Use correct table name
+    $stmt = $conn->prepare("SELECT * FROM admin_users WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows === 1) {
         $admin = $result->fetch_assoc();
+
+        // ✅ If password is plain text in DB (not hashed)
+        if ($password === $admin['password']) {
+            $_SESSION['admin'] = $admin['username'];
+            header("Location: dashboard.php");
+            exit();
+        }
+        // ✅ If password is hashed (you can uncomment below after hashing passwords)
+        /*
         if (password_verify($password, $admin['password'])) {
             $_SESSION['admin'] = $admin['username'];
             header("Location: dashboard.php");
             exit();
-        } else {
+        }
+        */
+        else {
             $error = "Invalid password.";
         }
     } else {
